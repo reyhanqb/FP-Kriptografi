@@ -11,7 +11,7 @@
         </label>
       </li>
     </ul>
-    <h3 v-if="voted">Your secret key is:{{ key }} </h3>
+    <h3 v-if="voted">Your secret key is: {{ voteKey }}</h3>
     <button @click="submitVote" :disabled="selectedOption === null">Vote</button>
     <div v-if="voted">
       <h3>Enter Your Name and Key to View Your Vote</h3>
@@ -69,10 +69,23 @@ export default {
       }
       return key;
     },
+    // viewVote() {
+    //   if (this.viewKey === this.voteKey && this.viewName === this.name) {
+    //     this.showVote = true;
+    //     const votedOption = this.options.find(option => option.text === this.name);
+    //     if (votedOption) {
+    //       this.voteMessage = `You voted for ${this.name}. Total votes: ${votedOption.votes}`;
+    //     } else {
+    //       this.voteMessage = 'You have not voted.';
+    //     }
+    //   } else {
+    //     this.voteMessage = 'Invalid name or key. Please try again.';
+    //   }
+    // }
     viewVote() {
       if (this.viewKey === this.voteKey && this.viewName === this.name) {
         this.showVote = true;
-        const votedOption = this.options.find(option => option.text === this.name);
+        const votedOption = this.options.find(option => option.text === this.viewName);
         if (votedOption) {
           this.voteMessage = `You voted for ${this.name}. Total votes: ${votedOption.votes}`;
         } else {
@@ -84,10 +97,11 @@ export default {
     }
   },
   watch: {
-    voteKey() {
-      if (this.voteKey) {
-        this.viewVote();
-      }
+    viewName() {
+      this.viewVote();
+    },
+    viewKey() {
+      this.viewVote();
     }
   }
 };
