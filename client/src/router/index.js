@@ -20,7 +20,12 @@ const router = createRouter({
     {
       path: '/voting',
       name: 'Voting',
-      component: () => import('../views/nyoba.vue')
+      component: () => import('../views/Voting.vue')
+    },
+    {
+      path: '/connect',
+      name: 'Voting',
+      component: () => import('../views/Connect.vue')
     }
   ]
 })
