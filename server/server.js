@@ -12,7 +12,6 @@ app.listen(3000, () => {
 
 app.use(cors());
 app.use(express.json()); // Enable JSON parsing for POST requests
-app.use(bodyParser());
 
 // MySQL connection configuration
 const db = mysql.createConnection({
@@ -31,17 +30,42 @@ db.connect((err) => {
   console.log('Connected to MySQL database!');
 });
 
-// Get userinfo table data
-app.get('/api/userinfo', (req, res) => {
-  const sql = 'SELECT * FROM userinfo';
+app.post('/api/vote', (req, res) => {
+  const { username, vote_key, vote } = req.body;
+  const sql = 'INSERT INTO userinfo (username, vote_key, vote) VALUES (?, ?, ?)';
+  const values = [username, vote_key, JSON.stringify(vote)];
 
-  db.query(sql, (err, results) => {
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error('Error executing MySQL query:', err);
+      res.status(500).json({ error: 'Failed to insert user data' });
+      return;
+    }
+    res.json({ message: 'User data inserted successfully' });
+  });
+});
+
+app.get('/api/viewvote', (req, res) => {
+  const { username, vote_key } = req.query;
+  const sql = 'SELECT * FROM userinfo WHERE username = ? AND vote_key = ?';
+
+  db.query(sql, [username, vote_key], (err, results) => {
     if (err) {
       console.error('Error executing MySQL query:', err);
       res.status(500).json({ error: 'Failed to fetch userinfo' });
       return;
     }
-    res.json(results);
+
+    if (results.length === 0) {
+      res.json({ error: 'Invalid name or key. Please try again.' });
+    } else {
+      const voteData = {
+        username: results[0].username,
+        vote_key: results[0].vote_key,
+        vote: JSON.parse(results[0].vote)
+      };
+      res.json(voteData);
+    }
   });
 });
 
