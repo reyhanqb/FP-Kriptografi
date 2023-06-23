@@ -104,24 +104,24 @@ app.get('/api/view', (req, res) => {
 //   });
 // });
 
-// app.get('/api/getVoteOptions', (req, res) => {
-//   const hashedName = req.query.hashedName;
-//   const sql = `SELECT * FROM userinfo WHERE vote LIKE '%${hashedName}%'`; // Modify the table and column names as per your database schema
+app.get('/api/getVoteOptions', (req, res) => {
+  const hashedName = req.query.hashedName;
+  const sql = `SELECT * FROM userinfo WHERE vote LIKE '%${hashedName}%'`; // Modify the table and column names as per your database schema
 
-//   db.query(sql, (err, results) => {
-//     if (err) {
-//       console.error('Error executing MySQL query:', err);
-//       res.status(500).json({ error: 'Failed to fetch vote optionAs' });
-//       return;
-//     }
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query:', err);
+      res.status(500).json({ error: 'Failed to fetch vote optionAs' });
+      return;
+    }
 
-//     if (results.length > 0) {
-//       res.json(results[0].vote); // Assuming only one vote option matches the hashed name
-//     } else {
-//       res.json(null); // Hashed name does not match any of the vote options
-//     }
-//   });
-// });
+    if (results.length > 0) {
+      res.json(results[0].vote); // Assuming only one vote option matches the hashed name
+    } else {
+      res.json(null); // Hashed name does not match any of the vote options
+    }
+  });
+});
 
 
 // // Insert new user data into userinfo table
