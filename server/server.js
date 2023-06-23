@@ -31,9 +31,9 @@ db.connect((err) => {
 });
 
 app.post('/api/vote', (req, res) => {
-  const { username, vote_key, vote } = req.body;
-  const sql = 'INSERT INTO userinfo (username, vote_key, vote) VALUES (?, ?, ?)';
-  const values = [username, vote_key, JSON.stringify(vote)];
+  const { username, vote } = req.body;
+  const sql = 'INSERT INTO userinfo (username, vote) VALUES (?, ?)';
+  const values = [username, JSON.stringify(vote)];
 
   db.query(sql, values, (err, result) => {
     if (err) {
@@ -45,35 +45,90 @@ app.post('/api/vote', (req, res) => {
   });
 });
 
-app.get('/api/viewvote', (req, res) => {
-  const { username, vote_key } = req.query;
-  const sql = 'SELECT * FROM userinfo WHERE username = ? AND vote_key = ?';
+app.post('/api/generatetoken', (req, res) => {
+  const { vote, token } = req.body;
+  const sql = 'INSERT INTO vote (vote, token) VALUES (?, ?)';
+  const values = [vote, token];
 
-  db.query(sql, [username, vote_key], (err, results) => {
+  db.query(sql, values, (err, result) => {
     if (err) {
       console.error('Error executing MySQL query:', err);
-      res.status(500).json({ error: 'Failed to fetch userinfo' });
+      res.status(500).json({ error: 'Failed to insert user data' });
+      return;
+    }
+    res.json({ message: 'Vote data inserted successfully' });
+  });
+});
+
+app.get('/api/view', (req, res) => {
+  const sql = 'SELECT vote, token FROM vote';
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error executing MySQL query:', err);
+      res.status(500).json({ error: 'Failed to fetch vote data' });
       return;
     }
 
-    if (results.length === 0) {
-      res.json({ error: 'Invalid name or key. Please try again.' });
+    const voteData = result.map(row => ({
+      vote: row.vote,
+      token: row.token
+    }));
+
+    res.json(voteData);
+  });
+});
+
+
+// app.get('/api/viewvote', (req, res) => {
+//   const { username, private_key } = req.query;
+//   const sql = 'SELECT * FROM userinfo WHERE username = ? AND private_key = ?';
+
+//   db.query(sql, [username, private_key], (err, results) => {
+//     if (err) {
+//       console.error('Error executing MySQL query:', err);
+//       res.status(500).json({ error: 'Failed to fetch userinfo' });
+//       return;
+//     }
+
+//     if (results.length === 0) {
+//       res.json({ error: 'Invalid name or key. Please try again.' });
+//     } else {
+//       const voteData = {
+//         username: results[0].username,
+//         // private_key: results[0].private_key,
+//         vote: JSON.parse(results[0].vote)
+//       };
+//       res.json(voteData);
+//     }
+//   });
+// });
+
+app.get('/api/getVoteOptions', (req, res) => {
+  const hashedName = req.query.hashedName;
+  const sql = `SELECT * FROM userinfo WHERE vote LIKE '%${hashedName}%'`; // Modify the table and column names as per your database schema
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query:', err);
+      res.status(500).json({ error: 'Failed to fetch vote optionAs' });
+      return;
+    }
+
+    if (results.length > 0) {
+      res.json(results[0].vote); // Assuming only one vote option matches the hashed name
     } else {
-      const voteData = {
-        username: results[0].username,
-        vote_key: results[0].vote_key,
-        vote: JSON.parse(results[0].vote)
-      };
-      res.json(voteData);
+      res.json(null); // Hashed name does not match any of the vote options
     }
   });
 });
 
+
 // // Insert new user data into userinfo table
 // app.post('/api/userinfo', (req, res) => {
-//   const { username, vote_key, vote } = req.body;
-//   const sql = 'INSERT INTO userinfo (username, vote_key, vote) VALUES (?, ?, ?)';
-//   const values = [username, vote_key, vote];
+//   const { username, private_key, vote } = req.body;
+//   const sql = 'INSERT INTO userinfo (username, private_key, vote) VALUES (?, ?, ?)';
+//   const values = [username, private_key, vote];
 
 //   db.query(sql, values, (err, result) => {
 //     if (err) {
